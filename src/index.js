@@ -49,15 +49,17 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body;
   const { user } = request;
 
-  user.todos.push({
+  const todo = {
     id: uuidv4(),
     title,
     done: false,
     deadline,
     created_at: new Date(),
-  });
+  }
 
-  return response.status(201).send();
+  user.todos.push(todo);
+
+  return response.status(201).json(todo);
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
@@ -73,7 +75,7 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   todo.title = title;
   todo.deadline = deadline;
 
-  return response.status(204).json(todo);
+  return response.status(200).json(todo);
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
@@ -94,14 +96,13 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { id } = request.params;
   const { user } = request;
 
-  const todo = user.todos.findIndex((todo) => todo.id === id);
+  const deleteTodo = user.todos.find((todo) => todo.id === id);
 
-  if(todo === -1)
+  if(!deleteTodo)
     return response.status(404).json({ error: "Todo not found." });
 
-  console.log(todo);
-  user.todos.splice(todo, 1);
-  return response.status(204).send();
+  user.todos.splice(deleteTodo.id, 1);
+  return response.status(204).json(user.todos);
 });
 
 module.exports = app;
